@@ -16,26 +16,17 @@ uploaded_file = st.sidebar.file_uploader("Upload File Excel (.xlsx)", type=["xls
 def load_sut_data(file):
     try:
         # --- TABEL USE ---
-        # 1. Baris 6 hingga 110 (Index pandas 5 - 109) merepresentasikan Komoditas (83 baris)
-        # 2. Kolom D = Nama Sektor (kita anggap sebagai kolom komoditas/industri untuk sumbu Y)
-        # 3. Kolom CK hingga DG (Komponen Pengeluaran), DH (Total Permintaan Akhir), DI (Total Use)
-        # Menggunakan kolom spesifik berdasar huruf Excel:
-        # D: Komoditas, DH: Permintaan Akhir, DI: Total Use Harga Pembeli
         cols_use = "D,DH,DI"
         df_use = pd.read_excel(file, sheet_name=0, skiprows=5, nrows=83, usecols=cols_use, header=None)
         df_use.columns = ["Komoditas", "Total_Permintaan_Akhir", "Total_Use"]
 
         # --- TABEL SUPPLY ---
-        # 1. Kolom DL (Nama Sektor), GQ (Output Domestik), GR (Supply ADH Dasar), 
-        #    HA (Impor/Komponen), HI (Total Pajak - Subsidi), 
-        #    Margin Transpor (Berdasarkan gambar, asumsikan HK/HL), HM (Total Supply ADH Pembeli)
-        # *Catatan: Pandas usecols harus string berurutan atau list integer. Kita pakai urutan huruf Excel.
         cols_supply = "DL,GQ,GR,HA,HI,HM"
         df_supply = pd.read_excel(file, sheet_name=0, skiprows=5, nrows=83, usecols=cols_supply, header=None)
         df_supply.columns = ["Komoditas_Supply", "Output_Domestik", "Supply_ADH_Dasar", 
                              "Impor_dll", "Pajak_kurang_Subsidi", "Total_Supply"]
 
-        # Menggabungkan Supply dan Use berdasarkan baris (karena urutannya sama)
+        # Menggabungkan Supply dan Use
         df_komoditas = pd.concat([df_use, df_supply.drop(columns=["Komoditas_Supply"])], axis=1)
 
         # Konversi ke numerik
@@ -46,20 +37,19 @@ def load_sut_data(file):
         df_komoditas["Diskrepansi"] = df_komoditas["Total_Supply"] - df_komoditas["Total_Use"]
 
         # --- NILAI TAMBAH BRUTO (NTB) ---
-        # Baris 120 (Index 119) di Excel adalah Nilai Tambah Bruto
-        # Kolom E hingga CI (Ada 83 kolom industri, namun Anda menyebut 105 sektor awal, 
-        # mari asumsikan kita ambil rentang kolom E (index 4) sampai CI (index 86) untuk industri).
-        # Nama sektor di baris 5 (Index 4)
         df_nama_industri = pd.read_excel(file, sheet_name=0, skiprows=4, nrows=1, header=None)
         df_ntb_row = pd.read_excel(file, sheet_name=0, skiprows=119, nrows=1, header=None)
         
-        # Ambil nama industri (E s.d. CI) -> Indeks pandas 4 s.d. 86
+        # Ambil list nilainya
         nama_industri = df_nama_industri.iloc[0, 4:87].values
-        ntb_values = df_ntb_row.iloc[0, 4:87].values
+        
+        # PERBAIKAN DI SINI: Jangan pakai .values di akhir saat pd.to_numeric
+        # Ubah row (baris) tersebut menjadi pandas Series lalu fillna
+        ntb_series = pd.to_numeric(df_ntb_row.iloc[0, 4:87], errors='coerce').fillna(0)
         
         df_industri = pd.DataFrame({
             "Industri": nama_industri,
-            "NTB": pd.to_numeric(ntb_values, errors='coerce').fillna(0)
+            "NTB": ntb_series.values  # Masukkan nilainya kembali ke dalam DataFrame
         })
         
         df_industri = df_industri.dropna(subset=['Industri'])
