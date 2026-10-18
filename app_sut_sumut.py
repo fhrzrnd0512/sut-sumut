@@ -23,7 +23,7 @@ def load_sut_data(file):
         df_use = pd.read_excel(file, sheet_name=0, skiprows=5, nrows=105, usecols="D,DH,DI", header=None)
         df_use.columns = ["Komoditas", "Total_Permintaan_Akhir", "Total_Use"]
 
-        df_supply = pd.read_excel(file, sheet_name=0, skiprows=5, nrows=105, usecols="GQ,GR,HA,HI,HM", header=None)
+        df_supply = pd.read_excel(file, sheet_name=0, skiprows=5, nrows=105, usecols="GR,HA,GZ,HI,HM", header=None)
         df_supply.columns = ["Output_Domestik", "Supply_ADH_Dasar", "Impor_dll", "Pajak_kurang_Subsidi", "Total_Supply"]
 
         df_komoditas = pd.concat([df_use, df_supply], axis=1)
@@ -38,7 +38,7 @@ def load_sut_data(file):
         # 2. NILAI TAMBAH BRUTO (83 Industri)
         # ==========================================
         df_nama_industri = pd.read_excel(file, sheet_name=0, skiprows=3, nrows=1, header=None)
-        df_ntb_row = pd.read_excel(file, sheet_name=0, skiprows=119, nrows=1, header=None)
+        df_ntb_row = pd.read_excel(file, sheet_name=0, skiprows=120, nrows=1, header=None)
         
         nama_industri = df_nama_industri.iloc[0, 4:87].values
         ntb_series = pd.to_numeric(df_ntb_row.iloc[0, 4:87], errors='coerce').fillna(0)
