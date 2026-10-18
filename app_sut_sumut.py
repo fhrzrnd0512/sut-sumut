@@ -38,7 +38,7 @@ def load_sut_data(file):
         # 2. NILAI TAMBAH BRUTO (83 Industri)
         # ==========================================
         df_nama_industri = pd.read_excel(file, sheet_name=0, skiprows=3, nrows=1, header=None)
-        df_ntb_row = pd.read_excel(file, sheet_name=0, skiprows=119, nrows=1, header=None)
+        df_ntb_row = pd.read_excel(file, sheet_name=0, skiprows=118, nrows=1, header=None)
         
         nama_industri = df_nama_industri.iloc[0, 4:87].values
         ntb_series = pd.to_numeric(df_ntb_row.iloc[0, 4:87], errors='coerce').fillna(0)
